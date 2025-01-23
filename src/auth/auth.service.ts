@@ -4,10 +4,14 @@ import { RegisterDto } from './dto/register.dto';
 import * as argon from 'argon2';
 import { LoginDto } from './dto/login.dto';
 import { User } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService
+  ) {}
 
   async register(dto: RegisterDto) {
     const { email, password } = dto;
@@ -22,7 +26,14 @@ export class AuthService {
     return this.prismaService.user.create({ data: userData, select: { id: true, email: true } });
   }
 
-  async login(dto: LoginDto): Promise<User> {
+  async login(user: User): Promise<{ access_token: string }> {
+    console.log('AuthService:login ', user);
+    const payload = { username: user.email, sub: user.id };
+    return { access_token: await this.jwtService.signAsync(payload) };
+  }
+
+  async validateUser(dto: LoginDto): Promise<User> {
+    console.log('AuthService:validateUser ', dto);
     const { email, password: _password } = dto;
     const user = await this.prismaService.user.findUnique({ where: { email } });
     if (!user) {
