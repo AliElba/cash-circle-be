@@ -51,6 +51,7 @@ export class AuthService {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    return { id: user.id, email: user.email } as User;
+    delete (user as Partial<User>).password; // Remove the password from the user object before returning it to the client
+    return user;
   }
 }

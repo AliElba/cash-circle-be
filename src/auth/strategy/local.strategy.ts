@@ -1,7 +1,8 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -20,6 +21,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
+
+    delete (user as Partial<User>).password; // Remove the password from the user object before returning it to the client
     return user;
   }
 }
