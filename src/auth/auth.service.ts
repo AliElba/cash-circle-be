@@ -32,6 +32,12 @@ export class AuthService {
     return { access_token: await this.jwtService.signAsync(payload) };
   }
 
+  /**
+   * Validates the user credentials during login.
+   * This method is used in the LocalStrategy to ensure that the provided
+   * email and password match an existing user in the database.
+   * It is called by the validate method in the LocalStrategy.
+   */
   async validateUser(dto: LoginDto): Promise<User> {
     console.log('AuthService:validateUser ', dto);
     const { email, password: _password } = dto;
