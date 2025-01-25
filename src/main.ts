@@ -14,6 +14,13 @@ async function bootstrap() {
     })
   );
 
+  // Enable CORS
+  app.enableCors({
+    origin: 'http://localhost:8100', // Frontend URL
+    credentials: true, // Allow cookies if needed
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
+
 bootstrap().then(() => console.log('Application is running'));

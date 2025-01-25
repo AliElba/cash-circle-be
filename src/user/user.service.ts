@@ -9,12 +9,9 @@ export class UserService {
 
   async editUser(userId: string, dto: EditUserDto) {
     const user = await this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        ...dto,
-      },
+      where: { id: userId },
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      data: { ...dto },
     });
 
     delete (user as Partial<User>).password; // Remove the password from the user object before returning it to the client
