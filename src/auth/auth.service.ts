@@ -14,16 +14,43 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const { email, password } = dto;
+    const { email, password, firstName, lastName } = dto;
     const hashedPassword = await argon.hash(password);
-    const userData = { email, password: hashedPassword };
 
-    const existingUser = await this.prismaService.user.findUnique({ where: { email } });
+    // Check if the user already exists
+    const existingUser = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+
     if (existingUser) {
-      throw new HttpException('User already exists with this email', HttpStatus.CONFLICT);
+      if (existingUser.status === 'registered') {
+        throw new HttpException('User already exists with this email', HttpStatus.CONFLICT);
+      }
+
+      // Update the unregistered user's status, password, and optional fields
+      return this.prismaService.user.update({
+        where: { email },
+        data: {
+          status: 'registered',
+          password: hashedPassword,
+          firstName: firstName || existingUser.firstName,
+          lastName: lastName || existingUser.lastName,
+        },
+        select: { id: true, email: true, status: true },
+      });
     }
 
-    return this.prismaService.user.create({ data: userData, select: { id: true, email: true } });
+    // If the user doesn't exist, create a new registered user
+    return this.prismaService.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        status: 'registered',
+        firstName,
+        lastName,
+      },
+      select: { id: true, email: true, status: true },
+    });
   }
 
   async login(user: User): Promise<{ access_token: string }> {
@@ -42,7 +69,7 @@ export class AuthService {
     console.log('AuthService:validateUser ', dto);
     const { email, password: _password } = dto;
     const user = await this.prismaService.user.findUnique({ where: { email } });
-    if (!user) {
+    if (!user || !user.password) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 

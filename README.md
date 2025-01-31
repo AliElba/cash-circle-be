@@ -9,6 +9,9 @@
 - **Prisma**: A modern database toolkit for TypeScript & Node.js. It helps you to interact with your database by providing a clean and type-safe API for database access.
 - **argon2**: A password-hashing function that includes a salt in the hash to protect against rainbow table attacks.
 - **JWT**: JSON Web Tokens are an open, industry standard RFC 7519 method for representing claims securely between two parties.
+- **Swagger**: An open-source software framework backed by a large ecosystem of tools that helps developers design, build, document, and consume RESTful web services.
+- **OpenAPI Generator**: A code generator that takes an OpenAPI Specification and generates client libraries, server stubs, and documentation.
+- 
 
 
 ## Scripts
@@ -19,6 +22,12 @@
 2. Start the development database container.
 3. Wait for 1 second.
 4. Deploy the Prisma migrations.
+
+## Client Models Generator, Prisma Type generator
+
+`$ npx @kalissaac/client-models-generator <output folder> [prisma schema file]`
+`$ npx @kalissaac/client-models-generator ./models ./prisma/schema.prisma`
+
 
 ## Most Used Commands
 
@@ -39,6 +48,6 @@ Here are some of the most commonly used commands for the backend application:
 - `docker-compose up -d`: Start the application in detached mode.
 - 
 - `prisma studio`: Open the Prisma Studio to view and edit the database.
-- `prisma migrate dev`: Create a new migration based on the changes in the Prisma schema.
+- `prisma migrate dev --name xyz`: Create a new migration based on the changes in the Prisma schema.
 - `prisma generate`: Generate the Prisma client based on the Prisma schema.
 - `prisma db push`: Deploy the Prisma migrations to the database.

@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GetUser } from '../auth/user.decorator';
-import { EditUserDto } from './edit-user.dto';
+import { CreateUnregisteredUserDto, UpdateUserDto } from './dto/user.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
-export class UserController {
-  constructor(private userService: UserService) {}
+export class UsersController {
+  constructor(private userService: UsersService) {}
 
   /**
    * Get the current authenticated user, getting the user ID from the JWT payload (token)
@@ -28,7 +28,12 @@ export class UserController {
    * @param dto
    */
   @Patch()
-  editUser(@GetUser('id') userId: string, @Body() dto: EditUserDto) {
+  editUser(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
     return this.userService.editUser(userId, dto);
+  }
+
+  @Post('unregistered')
+  createUnregisteredUser(@Body() dto: CreateUnregisteredUserDto) {
+    return this.userService.createUnregisteredUser(dto);
   }
 }
