@@ -47,7 +47,6 @@ model User {
 model Circle {
   id        String    @id @default(cuid())
   name      String
-  owner     User      @relation("CircleOwner", fields: [ownerId], references: [id])
   ownerId   String
   members   CircleMember[]
   amount    Float     @default(0)
@@ -59,13 +58,16 @@ model Circle {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now())
+
+  // Relationships
+  owner     User      @relation("CircleOwner", fields: [ownerId], references: [id])
 }
 
 model CircleMember {
   id           String        @id @default(cuid())
-  circle       Circle        @relation(fields: [circleId], references: [id])
+  circle       Circle        @relation(fields: [circleId], references: [id], onDelete: Cascade)
   circleId     String
-  user         User          @relation(fields: [userId], references: [id])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   slotNumber   Int?
   status       MemberStatus @default(PENDING) // PENDING, CONFIRMED, REJECTED

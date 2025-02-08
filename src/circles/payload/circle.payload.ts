@@ -13,12 +13,6 @@ export class CirclePayload {
   @ApiProperty()
   ownerId: string;
 
-  @ApiProperty({ description: 'Owner user of the circle (relation)', type: UserPayload })
-  owner: User; // using prisma generated client model to avoid circular dependency
-
-  @ApiProperty({ description: 'Members of the circle (relation)', type: [CircleMemberPayload] })
-  members: CircleMember[]; // using prisma generated client model to avoid circular dependency
-
   @ApiProperty({ enum: CircleStatus, example: CircleStatus.PENDING + ' test' })
   status: CircleStatus;
 
@@ -39,4 +33,13 @@ export class CirclePayload {
 
   @ApiProperty()
   updatedAt: Date;
+
+  // Relationships
+  // **************
+
+  @ApiProperty({ description: 'Owner user of the circle (relation)', type: UserPayload })
+  owner: User; // using prisma generated client model to avoid circular dependency
+
+  @ApiProperty({ description: 'Members of the circle (relation)', type: [CircleMemberPayload] })
+  members: CircleMember[]; // using prisma generated client model to avoid circular dependency
 }

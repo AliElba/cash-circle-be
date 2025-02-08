@@ -10,13 +10,13 @@ export class CreateCircleDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({ example: 'cm6wi27kk0001r6aujgx979cx' })
   @IsString()
   ownerId: string;
 
   @ApiProperty({ example: 10, description: 'Duration of the circle in Months' })
   @IsInt()
-  @Min(1) // Ensure duration is at least 1 Month
+  @Min(6) // Ensure duration is at least 1 Month
   duration: number;
 
   @ApiProperty({ example: 1000, description: 'Total amount for the circle' })
@@ -35,7 +35,7 @@ export class CreateCircleDto {
   @IsOptional()
   endDate?: Date;
 
-  @ApiProperty({ enum: CircleStatus, example: CircleStatus.PENDING + ' test' })
+  @ApiProperty({ enum: CircleStatus, example: CircleStatus.PENDING })
   @IsEnum(CircleStatus)
   @IsOptional()
   status?: CircleStatus;
@@ -54,7 +54,7 @@ export class UpdateCircleDto {
   @IsOptional()
   name?: string;
 
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiProperty({ example: 'cm6wi27kk0001r6aujgx979cx' })
   @IsString()
   @IsOptional()
   ownerId?: string;

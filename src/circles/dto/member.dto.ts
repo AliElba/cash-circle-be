@@ -13,12 +13,14 @@ export class MemberDto {
   slotNumber?: number;
 
   @ApiProperty({ enum: MemberStatus, example: MemberStatus.PENDING, description: 'Status of the member' })
+  @IsOptional()
   @IsEnum(MemberStatus)
-  status: MemberStatus;
+  status?: MemberStatus;
 
   @ApiProperty({ enum: PaymentStatus, example: 'PENDING', description: 'Payment status of the member' })
+  @IsOptional()
   @IsEnum(PaymentStatus)
-  paymentStatus: PaymentStatus;
+  paymentStatus?: PaymentStatus;
 
   @ApiProperty({ example: '2024-06-15T00:00:00.000Z', description: 'Payout date for this member' })
   @IsOptional()
@@ -42,8 +44,8 @@ export class MemberUpdateDto {
   id: string;
 
   @ApiProperty({ enum: MemberStatus, example: MemberStatus.CONFIRMED, description: 'Updated status of the member' })
-  @IsOptional()
   @IsEnum(MemberStatus)
+  @IsOptional()
   status?: MemberStatus;
 
   @ApiProperty({ example: 2, description: 'Update member slot number' })
