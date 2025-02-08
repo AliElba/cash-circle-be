@@ -2,6 +2,9 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { CirclesService } from './circles.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
 import { AddMemberDto } from './dto/member.dto';
+import { ApiResponse } from '@nestjs/swagger';
+import { Circle } from '@prisma/client';
+import { CirclePayload } from './payload/circle.payload';
 
 @Controller('circles')
 export class CirclesController {
@@ -9,22 +12,26 @@ export class CirclesController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async create(@Body() createCircleDto: CreateCircleDto) {
+  @ApiResponse({ description: 'Create Circles', type: CirclePayload })
+  async create(@Body() createCircleDto: CreateCircleDto): Promise<Circle> {
     return this.circlesService.createCircle(createCircleDto);
   }
 
   @Get()
+  @ApiResponse({ description: 'Get all Circles', type: [CirclePayload] })
   async findAll() {
     return this.circlesService.getAllCircles();
   }
 
   @Get(':id')
+  @ApiResponse({ description: 'Find Circle', type: CirclePayload })
   async findOne(@Param('id') id: string) {
     return this.circlesService.getCircleById(id);
   }
 
   @Put(':id')
   @UsePipes(new ValidationPipe({ whitelist: true }))
+  @ApiResponse({ description: 'Update Circle', type: CirclePayload })
   async update(@Param('id') id: string, @Body() updateCircleDto: UpdateCircleDto) {
     return this.circlesService.updateCircle(id, updateCircleDto);
   }

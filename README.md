@@ -11,43 +11,52 @@
 - **JWT**: JSON Web Tokens are an open, industry standard RFC 7519 method for representing claims securely between two parties.
 - **Swagger**: An open-source software framework backed by a large ecosystem of tools that helps developers design, build, document, and consume RESTful web services.
 - **OpenAPI Generator**: A code generator that takes an OpenAPI Specification and generates client libraries, server stubs, and documentation.
-- 
-
 
 ## Scripts
 
-`db:dev:restart`
+### Restart DB container o(`db:dev:restart`) this will run the below commands:
+1. `npm run db:dev:rm`: Remove the development database container.
+2. `npm run db:dev:up`: Start the development database container.
+3. `sleep 1`: Wait for 1 second.
+4. `npm run prisma:dev:deploy`: Deploy the Prisma migrations.
 
-1. Remove the development database container.
-2. Start the development database container.
-3. Wait for 1 second.
-4. Deploy the Prisma migrations.
+### Modify Prisma schema
+1. **Generate a new migration**: Create a new migration based on the changes in the Prisma schema.
+   ```bash
+   npx prisma migrate dev --name <migration_name>
+   ```
+2. **Deploy the migration**: Apply the generated migration to the database.
+   ```bash
+   npx prisma migrate deploy
+   ```
+3. **Generate the Prisma client**: Update the Prisma client to reflect the new schema changes.
+   ```bash
+   npx prisma generate
+   ```
+4. **Verify the changes**: Optionally, you can use Prisma Studio to verify the changes in the database.
+   ```bash
+   npx prisma studio
+   ``` 
 
-## Client Models Generator, Prisma Type generator
-
-`$ npx @kalissaac/client-models-generator <output folder> [prisma schema file]`
-`$ npx @kalissaac/client-models-generator ./models ./prisma/schema.prisma`
-
-
-## Most Used Commands
-
-Here are some of the most commonly used commands for the backend application:
-
+### Start Backend App
 - `npm run start:dev`: Start the application in development mode with hot-reloading.
 - `npm run build`: Build the application.
-- `npm run db:dev:restart`: Restart the development database and deploy Prisma migrations.
-- 
+
+### Git Commands
 - `git status`: Check the status of the repository.
 - `git add .`: Add all changes to the staging area.
 - `git commit -m "message"`: Commit changes with a message.
 - `git push origin main`: Push changes to the main branch.
 - `git pull origin main`: Pull changes from the main branch.
-- 
+
+### Docker Commands
 - `docker ps`: List all running containers.
-- `db:dev:restart`: Restart the development database and deploy Prisma migrations.
 - `docker-compose up -d`: Start the application in detached mode.
-- 
-- `prisma studio`: Open the Prisma Studio to view and edit the database.
+
+### Prisma (DB) Commands
+
 - `prisma migrate dev --name xyz`: Create a new migration based on the changes in the Prisma schema.
-- `prisma generate`: Generate the Prisma client based on the Prisma schema.
+- `prisma generate`: Generate the Prisma client based on the Prisma schema. The generated client will be stored in the `node_modules/.prisma/client` directory.
 - `prisma db push`: Deploy the Prisma migrations to the database.
+- `prisma studio`: Open the Prisma Studio to view and edit the database.
+- 

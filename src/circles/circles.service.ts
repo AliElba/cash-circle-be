@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
 import { AddMemberDto } from './dto/member.dto';
-import { User } from '@prisma/client';
+import { MemberStatus, User, UserStatus } from '@prisma/client';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class CirclesService {
             circleId: circle.id,
             userId: member.userId,
             slotNumber: member.slotNumber,
-            status: 'pending', // Default status
+            status: MemberStatus.PENDING,
           })),
         });
       }
@@ -120,10 +120,10 @@ export class CirclesService {
    * 1. If userId is provided:
    *    • Directly fetch the user by their ID.
    *    • If the user is found, proceed to add them to the circle.
-   * 2. If only email is provided:
-   *    • Check if the user exists by their email.
+   * 2. If only phone is provided:
+   *    • Check if the user exists by their phone.
    *    • If not, create a new unregistered user.
-   * 3. If neither userId nor email is provided:
+   * 3. If neither userId nor phone is provided:
    *    • Throw a BadRequestException.
    * 4. Validate slot availability before adding the user to the circle.
    */
@@ -139,24 +139,24 @@ export class CirclesService {
       }
     }
 
-    // Step 2: Handle email if userId is not provided
-    if (!user && memberData.email) {
-      user = await this.prisma.user.findUnique({ where: { email: memberData.email } });
+    // Step 2: Handle phone if userId is not provided
+    if (!user && memberData.phone) {
+      user = await this.prisma.user.findUnique({ where: { phone: memberData.phone } });
 
       if (!user) {
-        // Create an unregistered user if no user exists with the provided email
+        // Create an unregistered user if no user exists with the provided phone
         // user = await this.prisma.user.create({
         //   data: {
-        //     email: memberData.email,
+        //     phone: memberData.phone,
         //     status: 'unregistered',
         //   },
         // });
-        user = await this.userService.createUnregisteredUser({ email: memberData.email });
+        user = await this.userService.createUnregisteredUser({ phone: memberData.phone });
       }
     }
 
     if (!user) {
-      throw new BadRequestException('Either userId or email must be provided.');
+      throw new BadRequestException('Either userId or phone must be provided.');
     }
 
     // Step 3: Check if the user is already a member of the circle
@@ -188,7 +188,7 @@ export class CirclesService {
         circleId,
         userId: user.id,
         slotNumber: memberData.slotNumber,
-        status: user.status === 'registered' ? 'active' : 'pending',
+        status: user.status === UserStatus.REGISTERED ? MemberStatus.CONFIRMED : MemberStatus.PENDING,
       },
     });
   }

@@ -2,7 +2,6 @@ import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
-import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { GetUser } from './user.decorator';
 import { LoginDto } from './dto/login.dto';
@@ -37,7 +36,7 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @UseGuards(JwtAuthGuard) // Use the jwt strategy for authentication to protect this route from unauthorized access
+  //@UseGuards(JwtAuthGuard) // Use the jwt strategy for authentication to protect this route from unauthorized access
   @Post('register')
   register(@Body() registerDto: RegisterDto): Promise<Partial<User>> {
     return this.authService.register(registerDto);

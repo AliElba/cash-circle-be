@@ -8,16 +8,16 @@ import { User } from '@prisma/client';
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     /**
-     * The JwtStrategy does not require setting the usernameField to email.
+     * The JwtStrategy does not require setting the usernameField to phone.
      * The usernameField configuration is specific to the LocalStrategy used for initial authentication (e.g., login).
      * The JwtStrategy extracts the JWT token from the request headers and validates it.
      */
-    super({ usernameField: 'email' });
+    super({ usernameField: 'phone' });
   }
 
-  async validate(email: string, password: string): Promise<any> {
-    console.log('LocalStrategy:validate: ', email);
-    const user = await this.authService.validateUser({ email, password });
+  async validate(phone: string, password: string): Promise<any> {
+    console.log('LocalStrategy:validate: ', phone);
+    const user = await this.authService.validateUser({ phone, password });
 
     if (!user) {
       // throw new UnauthorizedException();
