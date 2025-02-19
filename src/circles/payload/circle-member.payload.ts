@@ -1,7 +1,7 @@
 import { CirclePayload } from './circle.payload';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserPayload } from '../../users/payload/user-payload';
-import { Circle, CircleStatus, MemberStatus, PaymentStatus, User } from '@prisma/client';
+import { Circle, MemberStatus, PaymentStatus, User } from '@prisma/client';
 
 export class CircleMemberPayload {
   @ApiProperty()
@@ -22,7 +22,7 @@ export class CircleMemberPayload {
   @ApiProperty({ example: 5.0, description: 'Administrative fees paid by this member' })
   adminFees?: number;
 
-  @ApiProperty({ enum: CircleStatus, example: CircleStatus.PENDING + ' test' })
+  @ApiProperty({ enum: MemberStatus, example: MemberStatus.CONFIRMED })
   status: MemberStatus;
 
   @ApiProperty({ enum: PaymentStatus, example: 'PENDING', description: 'Payment status of the member' })

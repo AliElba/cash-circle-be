@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CirclesService } from './circles.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
-import { AddMemberDto } from './dto/member.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { Circle } from '@prisma/client';
 import { CirclePayload } from './payload/circle.payload';
+import { MemberDto } from './dto/member.dto';
 
 @Controller('circles')
 export class CirclesController {
@@ -45,9 +45,9 @@ export class CirclesController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async addMember(
     @Param('id') circleId: string, // Circle ID from the URL
-    @Body() addMemberDto: AddMemberDto // Member details from the body
+    @Body() memberDto: MemberDto // Member details from the body
   ) {
-    return this.circlesService.addMemberToCircle(circleId, addMemberDto);
+    return this.circlesService.addMemberToCircle(circleId, memberDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT) // Sets the response status to 204 No Content

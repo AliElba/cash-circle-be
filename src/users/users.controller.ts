@@ -28,6 +28,7 @@ export class UsersController {
    */
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @ApiResponse({ description: 'Get current user, knowing the id from the token', type: UserPayload })
   getMe(@GetUser() user: User): User {
     return user;
   }
@@ -40,11 +41,13 @@ export class UsersController {
    * @param dto
    */
   @Patch()
+  @ApiResponse({ description: 'Edit current user', type: UserPayload })
   editUser(@GetUser('id') userId: string, @Body() dto: UpdateUserDto) {
     return this.userService.editUser(userId, dto);
   }
 
   @Post('unregistered')
+  @ApiResponse({ description: 'Create an unregistered user', type: UserPayload })
   createUnregisteredUser(@Body() dto: CreateUnregisteredUserDto) {
     return this.userService.createUnregisteredUser(dto);
   }

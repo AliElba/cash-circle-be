@@ -1,13 +1,13 @@
-import { ArrayMinSize, IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MemberDto, MemberUpdateDto } from './member.dto';
+import { MemberDto } from './member.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { CircleStatus } from '@prisma/client';
 
 export class CreateCircleDto {
   @ApiProperty({ example: 'Investment Club' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiProperty({ example: 'cm6wi27kk0001r6aujgx979cx' })
@@ -16,7 +16,7 @@ export class CreateCircleDto {
 
   @ApiProperty({ example: 10, description: 'Duration of the circle in Months' })
   @IsInt()
-  @Min(6) // Ensure duration is at least 1 Month
+  @Min(6) // Ensure duration is at least 6 Month
   duration: number;
 
   @ApiProperty({ example: 1000, description: 'Total amount for the circle' })
@@ -43,7 +43,6 @@ export class CreateCircleDto {
   @ApiProperty({ type: [MemberDto], description: 'Array of members in the circle' })
   @ValidateNested({ each: true })
   @Type(() => MemberDto)
-  @ArrayMinSize(1) // Ensure at least one member is invited
   @IsOptional()
   members?: MemberDto[];
 }
@@ -51,39 +50,31 @@ export class CreateCircleDto {
 export class UpdateCircleDto {
   @ApiProperty({ example: 'Savings Group' })
   @IsString()
-  @IsOptional()
   name?: string;
-
-  @ApiProperty({ example: 'cm6wi27kk0001r6aujgx979cx' })
-  @IsString()
-  @IsOptional()
-  ownerId?: string;
 
   @ApiProperty({ example: 10, description: 'Duration of the circle in Months' })
   @IsInt()
-  @Min(1) // Ensure duration is at least 1 Month
+  @Min(6) // Ensure duration is at least 6 Month
   duration: number;
+
+  @ApiProperty({ example: 1000, description: 'Total amount for the circle' })
+  @IsInt()
+  @Min(1000)
+  amount: number;
 
   @ApiProperty({ example: '2024-03-01T00:00:00.000Z', description: 'Start date of the circle' })
   @IsDate()
   @Type(() => Date)
-  @IsOptional()
-  startDate?: Date;
+  startDate: Date;
 
   @ApiProperty({ example: '2024-12-01T00:00:00.000Z', description: 'End date of the circle' })
   @IsDate()
   @Type(() => Date)
-  @IsOptional()
-  endDate?: Date;
+  endDate: Date;
 
-  @ApiProperty({ enum: CircleStatus, example: CircleStatus.ACTIVE })
-  @IsEnum(CircleStatus)
-  @IsOptional()
-  status?: CircleStatus;
-
-  @ApiProperty({ type: [MemberUpdateDto], description: 'Array of members to update' })
+  @ApiProperty({ type: [MemberDto], description: 'Array of members to update' })
   @ValidateNested({ each: true })
-  @Type(() => MemberUpdateDto)
+  @Type(() => MemberDto)
   @IsOptional()
-  members?: MemberUpdateDto[];
+  members?: MemberDto[];
 }

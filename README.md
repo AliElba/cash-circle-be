@@ -59,4 +59,9 @@
 - `prisma generate`: Generate the Prisma client based on the Prisma schema. The generated client will be stored in the `node_modules/.prisma/client` directory.
 - `prisma db push`: Deploy the Prisma migrations to the database.
 - `prisma studio`: Open the Prisma Studio to view and edit the database.
-- 
+
+
+### Setup Cloud DB
+- install `cross-env`
+- add `DATABASE_URL_CLOUD` to `.env`
+- run `npm run prisma:migrate:cloud`

@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
-import { AddMemberDto } from './dto/member.dto';
-import { MemberStatus, User, UserStatus } from '@prisma/client';
+
+import { CircleStatus, MemberStatus, PaymentStatus, User } from '@prisma/client';
 import { UsersService } from '../users/users.service';
+import { MemberDto } from './dto/member.dto';
 
 @Injectable()
 export class CirclesService {
@@ -14,32 +15,47 @@ export class CirclesService {
 
   /**
    * Create a new circle and optionally add members.
+   *
+   * This method performs the following steps:
+   * 1. Creates a new circle with the provided data.
+   * 2. If members are provided, it adds each member to the newly created circle.
+   * 3. All operations are performed within a transaction to ensure atomicity.
+   *
+   * @param data - The data required to create a new circle, including optional members.
+   * @returns The created circle along with any added members.
+   * @throws BadRequestException if there is an error during the creation process.
    */
   async createCircle(data: CreateCircleDto) {
     try {
-      // Step 1: Create the circle
+      const { members, ...rest } = data;
+
+      // Step 1: Create the circle inside the transaction
       const circle = await this.prisma.circle.create({
-        data: {
-          name: data.name,
-          ownerId: data.ownerId,
+        data: { ...rest },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
-      // Step 2: Add members if provided
-      if (data.members && data.members.length > 0) {
-        await this.prisma.circleMember.createMany({
-          data: data.members.map((member) => ({
-            circleId: circle.id,
-            userId: member.userId,
-            slotNumber: member.slotNumber,
-            status: MemberStatus.PENDING,
-          })),
-        });
+      // Step 2: Add members inside the transaction
+      if (members && members.length > 0) {
+        for (const member of members) {
+          await this.addMemberToCircle(circle.id, member);
+        }
       }
 
       return circle;
     } catch (error) {
-      throw new BadRequestException(`Error creating circle: ${(error as { message: string }).message}`);
+      throw new BadRequestException(`Error creating circle and adding members: ${(error as { message: string }).message}`);
     }
   }
 
@@ -49,8 +65,21 @@ export class CirclesService {
   async getAllCircles() {
     return this.prisma.circle.findMany({
       include: {
-        members: true,
-        owner: true,
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
   }
@@ -62,8 +91,22 @@ export class CirclesService {
     const circle = await this.prisma.circle.findUnique({
       where: { id },
       include: {
-        members: true,
-        owner: true,
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                phone: true,
+              },
+            },
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
@@ -74,31 +117,73 @@ export class CirclesService {
     return circle;
   }
 
-  async updateCircle(id: string, data: UpdateCircleDto) {
-    // Step 1: Update the circle's main fields
-    const updatedCircle = await this.prisma.circle.update({
-      where: { id },
-      data: {
-        name: data.name,
-        ownerId: data.ownerId,
-        status: data.status,
-      },
+  async updateCircle(id: string, updateCircleDto: UpdateCircleDto) {
+    // Fetch existing members for comparison
+    const existingMembers = await this.prisma.circleMember.findMany({
+      where: { circleId: id },
+      select: { id: true, userId: true },
     });
 
-    // Step 2: Handle member updates
-    if (data.members && data.members.length > 0) {
-      for (const member of data.members) {
-        await this.prisma.circleMember.update({
-          where: { id: member.id }, // Use the member's ID to update
+    const newMembers = updateCircleDto.members || [];
+
+    // Step 1: Identify members to REMOVE (exist in DB but not in the new list)
+    const membersToRemove = existingMembers.filter(
+      (existing) => !newMembers.some((newMember) => newMember.userId === existing.userId)
+    );
+
+    // Step 2: Identify members to ADD (exist in new list but not in DB)
+    const membersToAdd = newMembers.filter(
+      (newMember) => !existingMembers.some((existing) => existing.userId === newMember.userId)
+    );
+
+    // Step 3: Identify members to UPDATE (exist in both lists)
+    const membersToUpdate = newMembers.filter((newMember) =>
+      existingMembers.some((existing) => existing.userId === newMember.userId)
+    );
+
+    // Step 4: Perform Prisma Transactions to apply changes efficiently
+    return this.prisma.$transaction(async (prisma) => {
+      // Remove members not in the new list
+      if (membersToRemove.length > 0) {
+        await prisma.circleMember.deleteMany({
+          where: { id: { in: membersToRemove.map((m) => m.id) } },
+        });
+      }
+
+      // Update existing members
+      for (const member of membersToUpdate) {
+        await prisma.circleMember.update({
+          where: { id: member.id },
           data: {
-            status: member.status,
+            status: member.status || MemberStatus.PENDING,
             slotNumber: member.slotNumber,
+            paymentStatus: member.paymentStatus || PaymentStatus.PENDING,
+            payoutDate: member.payoutDate,
+            adminFees: member.adminFees,
           },
         });
       }
-    }
 
-    return updatedCircle;
+      // Add new members
+      for (const member of membersToAdd) {
+        await this.addMemberToCircle(id, member);
+      }
+
+      // Step 5: Update the circle's main fields
+      const isAllMembersConfirmed = updateCircleDto.members?.every((member) => member.status === MemberStatus.CONFIRMED);
+
+      return prisma.circle.update({
+        where: { id },
+        data: {
+          name: updateCircleDto.name,
+          amount: updateCircleDto.amount,
+          duration: updateCircleDto.duration,
+          startDate: updateCircleDto.startDate,
+          endDate: updateCircleDto.endDate,
+          status: isAllMembersConfirmed ? CircleStatus.ACTIVE : CircleStatus.PENDING,
+        },
+      });
+    });
   }
 
   /**
@@ -127,8 +212,13 @@ export class CirclesService {
    *    • Throw a BadRequestException.
    * 4. Validate slot availability before adding the user to the circle.
    */
-  async addMemberToCircle(circleId: string, memberData: AddMemberDto) {
+  async addMemberToCircle(circleId: string, memberData: MemberDto) {
     let user: User | null = null;
+
+    // Ensure either userId or phone exists
+    if (!memberData.userId && !memberData.phone) {
+      throw new BadRequestException('Each member must have a userId or phone number.');
+    }
 
     // Step 1: Handle userId if provided
     if (memberData.userId) {
@@ -145,12 +235,6 @@ export class CirclesService {
 
       if (!user) {
         // Create an unregistered user if no user exists with the provided phone
-        // user = await this.prisma.user.create({
-        //   data: {
-        //     phone: memberData.phone,
-        //     status: 'unregistered',
-        //   },
-        // });
         user = await this.userService.createUnregisteredUser({ phone: memberData.phone });
       }
     }
@@ -187,8 +271,8 @@ export class CirclesService {
       data: {
         circleId,
         userId: user.id,
-        slotNumber: memberData.slotNumber,
-        status: user.status === UserStatus.REGISTERED ? MemberStatus.CONFIRMED : MemberStatus.PENDING,
+        slotNumber: memberData.slotNumber, // on create only the owner should have a slot number
+        status: memberData.status || MemberStatus.PENDING,
       },
     });
   }
