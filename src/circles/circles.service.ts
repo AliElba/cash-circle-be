@@ -60,10 +60,45 @@ export class CirclesService {
   }
 
   /**
-   * Get all circles with members and owners.
+   * Get all circles with members and owner.
    */
   async getAllCircles() {
     return this.prisma.circle.findMany({
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Get all user circles with members and owner.
+   */
+  async getAllUserCircles(userId: string, status?: CircleStatus) {
+    return this.prisma.circle.findMany({
+      where: {
+        // Optional filter sent as a query params
+        ...(status && { status }),
+        members: {
+          // Get only circles where the current user is a member
+          some: {
+            userId: userId,
+          },
+        },
+      },
       include: {
         members: {
           include: {

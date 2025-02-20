@@ -1,10 +1,26 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CirclesService } from './circles.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
-import { ApiResponse } from '@nestjs/swagger';
-import { Circle } from '@prisma/client';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Circle, CircleStatus, User } from '@prisma/client';
 import { CirclePayload } from './payload/circle.payload';
 import { MemberDto } from './dto/member.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { GetUser } from '../auth/user.decorator';
 
 @Controller('circles')
 export class CirclesController {
@@ -21,6 +37,14 @@ export class CirclesController {
   @ApiResponse({ description: 'Get all Circles', type: [CirclePayload] })
   async findAll() {
     return this.circlesService.getAllCircles();
+  }
+
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ description: 'Get all user Circles', type: [CirclePayload] })
+  @ApiQuery({ name: 'status', enum: CircleStatus, required: false })
+  findAllUserCircles(@GetUser() user: User, @Query('status') status?: CircleStatus) {
+    return this.circlesService.getAllUserCircles(user.id, status);
   }
 
   @Get(':id')
