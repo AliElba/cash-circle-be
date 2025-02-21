@@ -15,12 +15,13 @@ import {
 } from '@nestjs/common';
 import { CirclesService } from './circles.service';
 import { CreateCircleDto, UpdateCircleDto } from './dto/circle.dto';
-import { ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Circle, CircleStatus, User } from '@prisma/client';
 import { CirclePayload } from './payload/circle.payload';
 import { MemberDto } from './dto/member.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GetUser } from '../auth/user.decorator';
+import { CircleMemberPayload } from './payload/circle-member.payload';
 
 @Controller('circles')
 export class CirclesController {
@@ -72,6 +73,18 @@ export class CirclesController {
     @Body() memberDto: MemberDto // Member details from the body
   ) {
     return this.circlesService.addMemberToCircle(circleId, memberDto);
+  }
+
+  @Put('members/:memberId')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @ApiBody({ type: MemberDto })
+  @ApiResponse({ status: 200, description: 'Member updated successfully', type: CircleMemberPayload })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  async updateMember(
+    @Param('memberId') memberId: string, // Member ID from the URL
+    @Body() memberDto: Partial<MemberDto> // Member details from the body
+  ) {
+    return this.circlesService.updateMemberFromCircle(memberId, memberDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT) // Sets the response status to 204 No Content

@@ -325,4 +325,28 @@ export class CirclesService {
     // Remove the member
     await this.prisma.circleMember.delete({ where: { id: memberId } });
   }
+
+  async updateMemberFromCircle(memberId: string, memberDto: Partial<MemberDto>) {
+    const existingMember = await this.prisma.circleMember.findUnique({
+      where: { id: memberId },
+    });
+
+    if (!existingMember) {
+      throw new BadRequestException('Member not found!');
+    }
+
+    if (!memberDto.status && !memberDto.slotNumber) {
+      throw new BadRequestException('Either status or slotNumber must be provided.');
+    }
+
+    // Update the member
+    return this.prisma.circleMember.update({
+      where: { id: memberId },
+      data: {
+        status: memberDto.status || existingMember.status,
+        slotNumber: memberDto.slotNumber || existingMember.slotNumber,
+        payoutDate: memberDto.payoutDate,
+      },
+    });
+  }
 }
