@@ -62,6 +62,13 @@
 
 
 ### Setup Cloud DB
-- install `cross-env`
-- add `DATABASE_URL_CLOUD` to `.env`
+- set the db url `DATABASE_URL=${DATABASE_URL_CLOUD}` to `.env`
 - run `npm run prisma:migrate:cloud`
+
+
+### Deploy to vercel
+
+🔍  Inspect: https://vercel.com/alielbas-projects/cash-circle/6oN5CXpyFdi2LmQKcpaSrfMFde9S [4s]
+✅  Production: https://cash-circle-9id2qyf4a-alielbas-projects.vercel.app [4s]
+📝  Deployed to production. Run `vercel --prod` to overwrite later (https://vercel.link/2F).
+💡  To change the domain or build command, go to https://vercel.com/alielbas-projects/cash-circle/settings
