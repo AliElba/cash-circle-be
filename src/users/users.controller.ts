@@ -7,6 +7,7 @@ import { CreateUnregisteredUserDto, UpdateUserDto } from './dto/user.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserPayload } from './payload/user-payload';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
@@ -27,7 +28,6 @@ export class UsersController {
    * @param user
    */
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   @ApiResponse({ description: 'Get current user, knowing the id from the token', type: UserPayload })
   getMe(@GetUser() user: User): User {
     return user;
@@ -35,7 +35,7 @@ export class UsersController {
 
   /**
    * Edit the current authenticated user, getting the user ID from the JWT payload (token)
-   * sample request:  PATCH /users
+   * Sample Request:  PATCH /users
    * with body: { "phone": "new phone number", name: "New Name" }
    * @param userId
    * @param dto

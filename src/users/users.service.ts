@@ -44,6 +44,7 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         phone: dto.phone,
+        name: dto.name,
         status: UserStatus.UNREGISTERED,
       },
     });

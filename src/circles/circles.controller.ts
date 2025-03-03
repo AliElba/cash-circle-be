@@ -23,6 +23,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { GetUser } from '../auth/user.decorator';
 import { CircleMemberPayload } from './payload/circle-member.payload';
 
+@UseGuards(JwtAuthGuard)
 @Controller('circles')
 export class CirclesController {
   constructor(private readonly circlesService: CirclesService) {}
@@ -30,6 +31,7 @@ export class CirclesController {
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiResponse({ description: 'Create Circles', type: CirclePayload })
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createCircleDto: CreateCircleDto): Promise<Circle> {
     return this.circlesService.createCircle(createCircleDto);
   }
@@ -41,7 +43,6 @@ export class CirclesController {
   }
 
   @Get('mine')
-  @UseGuards(JwtAuthGuard)
   @ApiResponse({ description: 'Get all user Circles', type: [CirclePayload] })
   @ApiQuery({ name: 'status', enum: CircleStatus, required: false })
   findAllUserCircles(@GetUser() user: User, @Query('status') status?: CircleStatus) {
@@ -57,6 +58,7 @@ export class CirclesController {
   @Put(':id')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiResponse({ description: 'Update Circle', type: CirclePayload })
+  @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() updateCircleDto: UpdateCircleDto) {
     return this.circlesService.updateCircle(id, updateCircleDto);
   }
@@ -68,6 +70,7 @@ export class CirclesController {
 
   @Post(':id/members')
   @UsePipes(new ValidationPipe({ whitelist: true }))
+  @HttpCode(HttpStatus.CREATED)
   async addMember(
     @Param('id') circleId: string, // Circle ID from the URL
     @Body() memberDto: MemberDto // Member details from the body
@@ -89,6 +92,7 @@ export class CirclesController {
 
   @HttpCode(HttpStatus.NO_CONTENT) // Sets the response status to 204 No Content
   @Delete(':circleId/members/:memberId')
+  @HttpCode(HttpStatus.OK)
   async removeMember(
     @Param('circleId') circleId: string, // Circle ID from the URL
     @Param('memberId') memberId: string // Member ID from the URL

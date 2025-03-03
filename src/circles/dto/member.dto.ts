@@ -19,6 +19,11 @@ export class MemberDto {
   @IsString()
   phone?: string;
 
+  @ApiProperty({ example: 'John Due', description: 'User name of the member' })
+  @ValidateIf((o: MemberDto) => !o.userId)
+  @IsString()
+  userName?: string;
+
   @ApiProperty({ example: 2, description: 'Slot number for the member in the circle' })
   @IsOptional()
   @IsNumber()

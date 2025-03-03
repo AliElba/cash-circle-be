@@ -39,6 +39,7 @@ export class CirclesService {
                 select: {
                   id: true,
                   name: true,
+                  phone: true,
                 },
               },
             },
@@ -106,6 +107,8 @@ export class CirclesService {
               select: {
                 id: true,
                 name: true,
+                phone: true,
+                avatar: true,
               },
             },
           },
@@ -133,6 +136,7 @@ export class CirclesService {
                 id: true,
                 name: true,
                 phone: true,
+                avatar: true,
               },
             },
           },
@@ -240,9 +244,9 @@ export class CirclesService {
    * 1. If userId is provided:
    *    • Directly fetch the user by their ID.
    *    • If the user is found, proceed to add them to the circle.
-   * 2. If only phone is provided:
+   * 2. If only phone is provided without userId:
    *    • Check if the user exists by their phone.
-   *    • If not, create a new unregistered user.
+   *    • If not, create a new unregistered user (using phone and name).
    * 3. If neither userId nor phone is provided:
    *    • Throw a BadRequestException.
    * 4. Validate slot availability before adding the user to the circle.
@@ -270,7 +274,10 @@ export class CirclesService {
 
       if (!user) {
         // Create an unregistered user if no user exists with the provided phone
-        user = await this.userService.createUnregisteredUser({ phone: memberData.phone });
+        user = await this.userService.createUnregisteredUser({
+          phone: memberData.phone,
+          name: memberData.userName || 'UN-REGISTERED',
+        });
       }
     }
 
