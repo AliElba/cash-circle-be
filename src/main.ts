@@ -3,8 +3,6 @@ import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CircleStatus, MemberStatus, PaymentStatus } from '@prisma/client';
-import * as express from 'express';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -75,9 +73,6 @@ const swaggerInit = (app: INestApplication<any>) => {
     enum: Object.values(PaymentStatus),
     description: 'Payment status',
   };
-
-  // Serve static files for Swagger UI
-  app.use('/swagger-static', express.static(join(__dirname, '../node_modules/swagger-ui-dist')));
 
   // Set up Swagger UI to display the generated documentation
   SwaggerModule.setup('api/docs', app, swaggerDocument, {
