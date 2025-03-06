@@ -18,9 +18,6 @@ export class AuthController {
   // @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<{ access_token: string }> {
-    console.log('AuthController:login ', loginDto);
-
-    console.log('LocalStrategy:validate: ', loginDto);
     // LocalAuthGuard is removed; manually validate user in the service to validate the user using class-validator setup on dto
     const user = await this.authService.validateUser(loginDto);
 
