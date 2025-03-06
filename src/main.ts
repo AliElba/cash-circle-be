@@ -18,8 +18,10 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:8100', 'https://cash-circle.vercel.app/'], // Frontend URL
-    credentials: true, // Allow cookies if needed
+    origin: ['http://localhost:8100', 'https://cash-circle.vercel.app'],
+    credentials: true, // Ensures cookies & authorization headers are sent
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allow specific methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Ensure proper headers are allowed
   });
 
   swaggerInit(app);
